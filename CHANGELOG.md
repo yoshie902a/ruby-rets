@@ -3,8 +3,8 @@
 ## 2.0.6 [In Progress]
 
 ### Fixes
-  * Fixed encoding issues on some RETS servers (Paul Trippett) 
   * Fixed character encoding that was causing issues on some RETS servers (Paul Trippett)
+  * Fixed an exception when Rapattoni RETS servers returned a "RETS-STATUS" XML tag on a multipart `client.get_object` call
 
 ## 2.0.5
 

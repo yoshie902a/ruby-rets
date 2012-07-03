@@ -137,7 +137,7 @@ module RETS
           @request_size, @request_hash = body.length, Digest::SHA1.hexdigest(body)
 
           # Make sure we aren't erroring
-          if body =~ /(<RETS(.+)\>)/
+          if body =~ /(<RETS (.+)\>)/
             code, text = @http.get_rets_response(Nokogiri::XML($1).xpath("//RETS").first)
             @rets_data = {:code => code, :text => text}
 
@@ -167,6 +167,14 @@ module RETS
                 next unless value and value != ""
 
                 parsed_headers[name.downcase] = value.strip
+              end
+
+              # Check off the first children because some Rap Rets seems to use RETS-Status
+              # and it will include it with an object while returning actual data.
+              # It only does this for multipart requests, single image pulls will use <RETS> like it should.
+              if parsed_headers["content-type"] == "text/xml"
+                code, text = @http.get_rets_response(Nokogiri::XML(content).children.first)
+                next if code == "20403"
               end
 
               if block.arity == 1

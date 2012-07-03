@@ -153,6 +153,27 @@ describe RETS::Base::Core do
 
         client.rets_data.should == {:code => "20000", :text => "Error message goes here."}
       end
+
+      it "raises an error" do
+        body = load_file("get_object", "multipart_raprets_error")
+
+        response = mock("Response")
+        response.stub(:read_body).and_return(body)
+        response.stub(:content_type).and_return("multipart/parallel")
+        response.stub(:type_params).and_return("boundary" => '"534546696C65426F756E647279"', "charset" => "UTF8")
+
+        http = mock("HTTP")
+        http.should_receive(:request).with(anything).and_yield(response)
+        http.stub(:get_rets_response) do |args|
+          RETS::HTTP.new({}).get_rets_response(args)
+        end
+
+        client = RETS::Base::Core.new(http, {:getobject => @uri})
+
+        photo_found = false
+        client.get_object(:resource => "Property", :type => "Photo", :id => "0:0:*") {|a, b| photo_found = true }
+        photo_found.should be_false
+      end
     end
 
     context "without multipart" do
