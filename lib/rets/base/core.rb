@@ -12,6 +12,10 @@ module RETS
       # @return [String] SHA1 hash of the request
       attr_reader :request_hash
 
+      # Can be called after any {#get_object} or {#search} call that hits the RETS Server.
+      # @return [Float] How long the request took
+      attr_reader :request_time
+
       # Can be called after any {RETS::Base::Core} call that hits the RETS Server.
       # @return [Hash]
       #   Gives access to the miscellaneous RETS data, such as reply text, code, delimiter, count and so on depending on the API call made.
@@ -75,7 +79,7 @@ module RETS
           raise RETS::CapabilityNotFound.new("No GetMetadata capability found for given user.")
         end
 
-        @request_size, @request_hash, @rets_data = nil, nil, nil
+        @request_size, @request_hash, @request_time, @rets_data = nil, nil, nil, nil
         @http.request(:url => @urls[:getmetadata], :read_timeout => args[:read_timeout], :params => {:Format => :COMPACT, :Type => args[:type], :ID => args[:id]}) do |response|
           stream = RETS::StreamHTTP.new(response)
           sax = RETS::Base::SAXMetadata.new(block)
@@ -131,9 +135,13 @@ module RETS
         end
 
         # Will get swapped to a streaming call rather than a download-and-parse later, easy to do as it's called with a block now
-        @request_size, @request_hash, @rets_data = nil, nil, nil
+        start = Time.now.utc.to_f
+
+        @request_size, @request_hash, @request_time, @rets_data = nil, nil, nil, nil
         @http.request(req) do |response|
           body = response.read_body
+
+          @request_time = Time.now.utc.to_f - start
           @request_size, @request_hash = body.length, Digest::SHA1.hexdigest(body)
 
           # Make sure we aren't erroring
@@ -249,10 +257,13 @@ module RETS
           req[:params][:Count] = 1
         end
 
-        @request_size, @request_hash, @rets_data = nil, nil, {}
+        @request_size, @request_hash, @request_time, @rets_data = nil, nil, nil, {}
+
+        start = Time.now.utc.to_f
         @http.request(req) do |response|
           if args[:disable_stream]
             stream = StringIO.new(response.body)
+            @request_time = Time.now.utc.to_f - start
           else
             stream = RETS::StreamHTTP.new(response)
           end
