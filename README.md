@@ -20,10 +20,10 @@ Examples
       # RETS data in key/value format, as COMPACT-DECODED
     end
 
-    client.get_object(:resource => :Property, :type => :Photo, :location => false, :id => "1:0:*") do |object|
-      puts "Object-ID #{object[:headers]["Object-ID"]}, Content-ID #{object[:headers]["Content-ID"]}, Description #{object[:headers]["Description"]}"
+    client.get_object(:resource => :Property, :type => :Photo, :location => false, :id => "1:0:*") do |headers, content|
+      puts "Object-ID #{headers"object-id"]}, Content-ID #{headers["content-id"]}, Description #{["description"]}"
       puts "Data"
-      puts object[:content]
+      puts content
     end
 
 VCR / WebMock
