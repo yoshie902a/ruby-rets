@@ -20,8 +20,8 @@ Examples
       # RETS data in key/value format, as COMPACT-DECODED
     end
 
-    client.get_object(:resource => :Property, :type => :Photo, :location => false, :id => "1:0:*").each do |object|
-      puts "Object-ID #{object[:headers]["Object-ID"]}, Content-ID #{object[:headers]["Content-ID"], Description #{object[:headers]["Description"]}"
+    client.get_object(:resource => :Property, :type => :Photo, :location => false, :id => "1:0:*") do |object|
+      puts "Object-ID #{object[:headers]["Object-ID"]}, Content-ID #{object[:headers]["Content-ID"]}, Description #{object[:headers]["Description"]}"
       puts "Data"
       puts object[:content]
     end
