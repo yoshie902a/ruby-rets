@@ -16,7 +16,7 @@ Examples
 -
 
     client = RETS::Client.login(:url => "http://foobar.com/rets/Login", :username => "foo", :password => "bar")
-    client.search(:search_type => :Property, :class => :RES, :filter => "(ListPrice=50000-)") do |data|
+    client.search(:search_type => :Property, :class => :RES, :query => "(ListPrice=50000-)") do |data|
       # RETS data in key/value format, as COMPACT-DECODED
     end
 
