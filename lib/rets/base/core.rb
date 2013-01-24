@@ -146,13 +146,18 @@ module RETS
 
           # Make sure we aren't erroring
           if body =~ /(<RETS (.+)\>)/
+            # RETSIQ (and probably others) return a <RETS> tag on a location request without any error inside
+            # since parsing errors out of full image data calls is a tricky pain. We're going to keep the
+            # loose error checking, but will confirm that it has an actual error code
             code, text = @http.get_rets_response(Nokogiri::XML($1).xpath("//RETS").first)
-            @rets_data = {:code => code, :text => text}
+            unless code == "0"
+              @rets_data = {:code => code, :text => text}
 
-            if code == "20403"
-              return
-            else
-              raise RETS::APIError.new("#{code}: #{text}", code, text)
+              if code == "20403"
+                return
+              else
+                raise RETS::APIError.new("#{code}: #{text}", code, text)
+              end
             end
           end
 

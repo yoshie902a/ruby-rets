@@ -5,6 +5,7 @@
 ### Fixes
   * Fixed character encoding that was causing issues on some RETS servers (Paul Trippett)
   * Fixed an exception when Rapattoni RETS servers returned a "RETS-STATUS" XML tag on a multipart `client.get_object` call
+  * Fixed a `RETS::APIError` code 0 error under some RETS systems when making a call to `client.get_object` with `:location`
 
 ## 2.0.5
 
