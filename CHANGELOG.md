@@ -2,7 +2,15 @@
 
 ## 2.0.6 [In Progress]
 
+### Features
+  * System name added to `rets_data[:system_id]` when pulling metadata out
+  * `client.request_size` and `client.request_hash` can be used when streaming is disabled in `client.search`
+  * Added `client.request_time` which gives the time taken in seconds for a `client.search` or `client.get_object` to run
+
 ### Fixes
+  * Fixed an authentication issue when using Retsiq where it would return 20041 in place of HTTP 401
+  * Fixed errors when streaming with an unknown Content-Length and chunked encoding
+  * Fixed a block being required when making a `client.search` call with `:count_mode => :only`
   * Fixed character encoding that was causing issues on some RETS servers (Paul Trippett)
   * Fixed an exception when Rapattoni RETS servers returned a "RETS-STATUS" XML tag on a multipart `client.get_object` call
   * Fixed a `RETS::APIError` code 0 error under some RETS systems when making a call to `client.get_object` with `:location`
