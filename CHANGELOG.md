@@ -1,6 +1,6 @@
 # Overview
 
-## 2.0.6 [In Progress]
+## 2.0.6
 
 ### Features
   * System name added to `rets_data[:system_id]` when pulling metadata out
