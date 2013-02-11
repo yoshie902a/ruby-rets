@@ -238,11 +238,12 @@ module RETS
           # Rather than returning HTTP 401 when User-Agent authentication is needed, Retsiq returns HTTP 200
           # with RETS error 20037. If we get a 20037, will let it pass through and handle it as if it was a HTTP 401.
           # Retsiq apparently returns a 20041 now instead of a 20037 for the same use case.
+          # StratusRETS returns 20052 for an expired season
           rets_code = nil
           if response.code != "401" and ( response.code != "200" or args[:check_response] )
             if response.body =~ /<RETS/i
               rets_code, text = self.get_rets_response(Nokogiri::XML(response.body).xpath("//RETS").first)
-              unless rets_code == "20037" or rets_code == "20041" or rets_code == "0"
+              unless rets_code == "20037" or rets_code == "20041" or rets_code == "20052" or rets_code == "0"
                 raise RETS::APIError.new("#{rets_code}: #{text}", rets_code, text)
               end
 
@@ -258,7 +259,7 @@ module RETS
             args[:block] ||= block
             return self.request(args)
 
-          elsif response.code == "401" or rets_code == "20037" or rets_code == "20041"
+          elsif response.code == "401" or rets_code == "20037" or rets_code == "20041" or rets_code == "20052"
             raise RETS::Unauthorized, "Cannot login, check credentials" if ( @auth_mode and @retried_request ) or ( @retried_request and rets_code == "20037" )
             @retried_request = true
 
