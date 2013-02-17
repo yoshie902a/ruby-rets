@@ -278,6 +278,7 @@ describe RETS::HTTP do
     header_mock = mock("Header")
     header_mock.stub(:get_fields).with("set-cookie").and_return(cookies)
     header_mock.stub(:[]).with("set-cookie").and_return(cookies.join(", "))
+    header_mock.stub(:[]).with("rets-version").and_return(nil)
 
     res_mock = mock("Response")
     res_mock.stub(:code).and_return("200")
@@ -315,6 +316,7 @@ describe RETS::HTTP do
       header_mock = mock("Header")
       header_mock.stub(:get_fields).with("set-cookie").and_return(cookies)
       header_mock.stub(:[]).with("set-cookie").and_return(cookies.join(", "))
+      header_mock.stub(:[]).with("rets-version").and_return(nil)
 
       res_mock = mock("Response")
       res_mock.stub(:code).and_return("200")
@@ -358,6 +360,7 @@ describe RETS::HTTP do
     header_mock.should_receive(:get_fields).with("www-authenticate").and_return(["Digest #{digest}"])
     header_mock.should_receive(:[]).with("www-authenticate").and_return("Digest #{digest}")
     header_mock.should_receive(:[]).with("set-cookie").and_return(nil)
+    header_mock.should_receive(:[]).with("rets-version").twice.and_return(nil)
 
     res_mock = mock("Response")
     res_mock.stub(:code).and_return("200")
@@ -372,6 +375,7 @@ describe RETS::HTTP do
     # Good request
     header_mock = mock("Header")
     header_mock.should_receive(:[]).with("www-authenticate").and_return(nil)
+    header_mock.should_receive(:[]).with("rets-version").twice.and_return(nil)
     header_mock.should_receive(:[]).with("set-cookie").and_return(nil)
 
     res_mock = mock("Response")
@@ -401,7 +405,7 @@ describe RETS::HTTP do
 
     tests = [
       {:code => "401", :uri => uri, :hash_match => hash_including("Cookie" => "RETS-Session-ID=foofoo")},
-      {:cookie => "barfoo", :code => "200", :uri => login_uri, :hash_match => hash_not_including("Cookie" => "RETS-Session-ID=foofoo")},
+      {:cookie => "barfoo", :code => "200", :version => "RETS/1.0", :uri => login_uri, :hash_match => hash_not_including("Cookie" => "RETS-Session-ID=foofoo")},
       {:code => "200", :uri => uri, :hash_match => hash_including("Cookie" => "RETS-Session-ID=barfoo"), :body => "Foo Bar"}
     ]
 
@@ -414,6 +418,15 @@ describe RETS::HTTP do
         header_mock.should_receive(:[]).with("set-cookie").and_return("RETS-Session-ID=#{config[:cookie]}; path=/")
       else
         header_mock.should_receive(:[]).with("set-cookie").and_return(nil)
+      end
+
+      # Make sure the RETS-Version is set on HTTP 200 the first time
+      if config[:code] == "200"
+        if config[:version]
+          header_mock.should_receive(:[]).with("rets-version").twice.and_return(config[:version])
+        else
+          header_mock.should_not_receive(:[]).with("rets-version")
+        end
       end
 
       res_mock = mock("Response")

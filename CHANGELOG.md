@@ -1,5 +1,11 @@
 # Overview
 
+## 2.0.7 [In Progress]
+
+### Fixes
+  * `RETS-Version` is no longer set to `RETS/1.7` unless an error `20037` is returned and no other one is specified
+  * `RETS-Version` can be set based on a HTTP 200 response for systems which only pass it after authentication (Innovia)
+
 ## 2.0.6
 
 ### Features

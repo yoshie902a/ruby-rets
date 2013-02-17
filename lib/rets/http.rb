@@ -150,7 +150,7 @@ module RETS
       # Because Rapattoni's does, will set and use it when possible, but otherwise will fake one.
       # They also seem to require RETS-Version even when it's not required by RETS-UA-Authorization.
       # Others, such as Offut/Innovia pass the header, but without a version attached.
-      @headers["RETS-Version"] = args[:version]
+      @headers["RETS-Version"] = args[:version] if args[:version]
 
       if @headers["RETS-Version"] and @config[:useragent] and @config[:useragent][:password]
         login = Digest::MD5.hexdigest("#{@config[:useragent][:name]}:#{@config[:useragent][:password]}")
@@ -252,6 +252,13 @@ module RETS
             end
           end
 
+          # Strictly speaking, we do not need to set a RETS-Version in most cases, if RETS-UA-Authorization is not used
+          # It makes more sense to be safe and set it. Innovia at least does not set this until authentication is successful
+          # which is why this check is also here for HTTP 200s and not just 401s
+          if response.code == "200" and !@rets_data[:version] and response.header["rets-version"] != ""
+            @rets_data[:version] = response.header["rets-version"]
+          end
+
           # Digest can become stale requiring us to reload data
           if @auth_mode == :digest and response.header["www-authenticate"] =~ /stale=true/i
             save_digest(get_digest(response.header.get_fields("www-authenticate")))
@@ -292,7 +299,13 @@ module RETS
             # Check if we need to deal with User-Agent authorization
             if response.header["rets-version"] and response.header["rets-version"] != ""
               @rets_data[:version] = response.header["rets-version"]
-            else
+
+            # If we get a 20037 error, it could be due to not having a RETS-Version set
+            # Under Innovia, passing RETS/1.7 will cause some errors
+            # because they don't pass the RETS-Version header until a successful login which is a HTTP 200
+            # They also don't use RETS-UA-Authorization, and it's better to not imply the RETS-Version header
+            # unless necessary, so will only do it for 20037 errors now.
+            elsif !@rets_data[:version] and rets_code == "20037"
               @rets_data[:version] = "RETS/1.7"
             end
 
