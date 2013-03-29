@@ -1,6 +1,8 @@
 # Overview
 
-## 2.0.7 [In Progress]
+## 2.0.7
+
+Confirmed to work with Ruby 2.0.0-p0
 
 ### Fixes
   * `RETS-Version` is no longer set to `RETS/1.7` unless an error `20037` is returned and no other one is specified
