@@ -40,4 +40,4 @@ Due to the streaming parser, the search features won't work with a library like 
 
 License
 -
-Dual licensed under MIT and GPL.
+Licensed under MIT
