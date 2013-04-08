@@ -15,7 +15,7 @@ module RETS
       @content_length = @response.content_length
       @chunked = @response.chunked?
       @socket = @response.instance_variable_get(:@socket)
-
+      @left_over = ""
       @digest = Digest::SHA1.new
       @total_size = 0
 
@@ -113,7 +113,18 @@ module RETS
 
       # If we don't have a content length, then we need to keep reading until we run out of data
       elsif !@content_length
-        data = @socket.readline
+        if @left_over.length > 0
+          data = @left_over
+          @left_over = ""
+          data += @socket.readline
+        else
+          data = @socket.readline
+        end
+
+        if data.length > read_len
+          @left_over = data[4000,data.length]
+          data = data[0,4000]
+        end
 
         @total_size += data.length if data
       end
