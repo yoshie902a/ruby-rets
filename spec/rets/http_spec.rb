@@ -17,6 +17,28 @@ describe RETS::HTTP do
     http.request(:url => uri)
   end
 
+  context "HTTP Proxy" do
+    it "should use one" do
+      http_mock = mock("HTTP")
+      http_mock.should_receive(:start)
+
+      Net::HTTP.should_receive(:new).with("foobar.com", 80, "example.com", 9100, "foo", "bar").and_return(http_mock)
+
+      http = RETS::HTTP.new(:http => {:proxy => {:address => "example.com", :port => 9100, :username => "foo", :password => "bar"}})
+      http.request(:url => URI("http://foobar.com/login/login.bar"))
+    end
+
+    it "should not use one" do
+      http_mock = mock("HTTP")
+      http_mock.should_receive(:start)
+
+      Net::HTTP.should_receive(:new).with("foobar.com", 80).and_return(http_mock)
+
+      http = RETS::HTTP.new({})
+      http.request(:url => URI("http://foobar.com/login/login.bar"))
+    end
+  end
+
   context "HTTP authentication" do
     it "parses the digest header" do
         http = RETS::HTTP.new({})

@@ -1,5 +1,10 @@
 # Overview
 
+## 2.0.8 [In Progress]
+
+### Features
+  * Added support for using a HTTP Proxy
+
 ## 2.0.7
 
 Confirmed to work with Ruby 2.0.0-p0
