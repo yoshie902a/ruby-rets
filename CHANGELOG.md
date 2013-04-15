@@ -4,6 +4,10 @@
 
 ### Features
   * Added support for using a HTTP Proxy
+  * Streaming can be disabled for `get_metadata` calls
+
+### Fixes
+  * Disabled gzip while streaming is enabled to fix parsing issues, it's still enabled when streaming is disabled (`:disable_stream => true`)
 
 ## 2.0.7
 
