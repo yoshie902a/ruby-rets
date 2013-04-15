@@ -60,6 +60,7 @@ module RETS
       # @option args [String] :type Metadata to request, the same value if you were manually making the request, "METADATA-SYSTEM", "METADATA-CLASS" and so on
       # @option args [String] :id Filter the data returned by ID, "*" would return all available data
       # @option args [Integer, Optional] :read_timeout How many seconds to wait before giving up
+      # @option args [Boolean, Optional] :disable_stream Disables the streaming setup for data and instead loads it all and then parses
       #
       # @yield For every group of metadata downloaded
       # @yieldparam [String] :type Type of data that was parsed with "METADATA-" stripped out, for "METADATA-SYSTEM" this will be "SYSTEM"
@@ -80,13 +81,25 @@ module RETS
         end
 
         @request_size, @request_hash, @request_time, @rets_data = nil, nil, nil, nil
-        @http.request(:url => @urls[:getmetadata], :read_timeout => args[:read_timeout], :params => {:Format => :COMPACT, :Type => args[:type], :ID => args[:id]}) do |response|
-          stream = RETS::StreamHTTP.new(response)
-          sax = RETS::Base::SAXMetadata.new(block)
 
+        start = Time.now.utc.to_f
+        @http.request(:url => @urls[:getmetadata], :read_timeout => args[:read_timeout], :disable_compression => !args[:disable_stream], :params => {:Format => :COMPACT, :Type => args[:type], :ID => args[:id]}) do |response|
+          if args[:disable_stream]
+            stream = StringIO.new(response.body)
+            @request_time = Time.now.utc.to_f - start
+          else
+            stream = RETS::StreamHTTP.new(response)
+          end
+
+          sax = RETS::Base::SAXMetadata.new(block)
           Nokogiri::XML::SAX::Parser.new(sax).parse_io(stream)
 
-          @request_size, @request_hash = stream.size, stream.hash
+          if args[:disable_stream]
+            @request_size, @request_hash = response.body.length, Digest::SHA1.hexdigest(response.body)
+          else
+            @request_size, @request_hash = stream.size, stream.hash
+          end
+
           @rets_data = sax.rets_data
         end
 
@@ -251,7 +264,7 @@ module RETS
           raise RETS::CapabilityNotFound.new("Cannot find URL for Search call")
         end
 
-        req = {:url => @urls[:search], :read_timeout => args[:read_timeout]}
+        req = {:url => @urls[:search], :read_timeout => args[:read_timeout], :disable_compression => !args[:disable_stream]}
         req[:params] = {:Format => "COMPACT-DECODED", :SearchType => args[:search_type], :QueryType => "DMQL2", :Query => args[:query], :Class => args[:class], :Limit => args[:limit], :Offset => args[:offset], :RestrictedIndicator => args[:restricted]}
         req[:params][:Select] = args[:select].join(",") if args[:select].is_a?(Array)
         req[:params][:StandardNames] = 1 if args[:standard_names]

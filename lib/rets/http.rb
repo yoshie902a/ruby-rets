@@ -180,6 +180,10 @@ module RETS
       end
 
       headers = args[:headers]
+      if args[:disable_compression]
+        headers ||= {}
+        headers["Accept-Encoding"] = "identity"
+      end
 
       # Digest will change every time due to how its setup
       @request_count += 1
