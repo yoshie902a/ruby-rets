@@ -1,6 +1,6 @@
 Overview
 ===
-Simplifies the process of pulling data from RETS servers without having to worry about various authentication setups, should support all 1.x implementations. Parsing uses SAX to stream data as it comes rather than having to pull the entire document down and parse it all at once as some servers can return quite a lot of data.
+Simplifies the process of dealing with RETS servers. Without having to worry about the various authentication methods or edge cases associated with dealing with RETS. Should work against all 1.x implementations.
 
 Compability
 -
