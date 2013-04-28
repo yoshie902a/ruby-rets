@@ -8,6 +8,7 @@
 
 ### Fixes
   * Disabled gzip while streaming is enabled to fix parsing issues, it's still enabled when streaming is disabled (`:disable_stream => true`)
+  * No longer errors if Set-Cookie is returned with an invalid value (RAPRETS)
 
 ## 2.0.7
 

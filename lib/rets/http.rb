@@ -225,6 +225,14 @@ module RETS
             response.header.get_fields("set-cookie").each do |cookie|
               key, value = cookie.split(";").first.split("=")
               key.strip!
+
+              # Sometimes we can get a nil value from raprets
+              unless value
+                cookies_changed = true if @cookie_list[key]
+                @cookie_list.delete(key)
+                next
+              end
+
               value.strip!
 
               # If it's a RETS-Session-ID, it needs to be shoved into the RETS-UA-Authorization field
